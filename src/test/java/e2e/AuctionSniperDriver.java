@@ -4,7 +4,6 @@ import com.objogate.wl.swing.AWTEventQueueProber;
 import com.objogate.wl.swing.driver.JFrameDriver;
 import com.objogate.wl.swing.driver.JLabelDriver;
 import com.objogate.wl.swing.gesture.GesturePerformer;
-import pl.kgurniak.auctionsniper.Main;
 import pl.kgurniak.auctionsniper.ui.MainWindow;
 
 import static org.hamcrest.core.IsEqual.equalTo;

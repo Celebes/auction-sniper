@@ -8,6 +8,7 @@ import static e2e.FakeAuctionServer.XMPP_HOSTNAME;
 public class ApplicationRunner {
     public static final String SNIPER_ID = "sniper";
     public static final String SNIPER_PASSWORD = "sniper";
+    public static final String SNIPER_XMPP_ID = "sniper@localhost/Auction";
 
     private AuctionSniperDriver driver;
 
@@ -37,5 +38,9 @@ public class ApplicationRunner {
             return;
         }
         driver.dispose();
+    }
+
+    public void hasShownSniperIsBidding() {
+        driver.showsSniperStatus(MainWindow.STATUS_BIDDING);
     }
 }

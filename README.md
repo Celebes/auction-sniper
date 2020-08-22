@@ -5,4 +5,4 @@ Openfire server is dockerized with openfire.xml, which contains **&lt;autosetup&
 
 Manual installation of XMPP server and going through setup wizard after that is not necessary. Thanks to that e2e tests can be run anywhere, the only prerequisite is having Docker installed on your machine.
 
-Just run **mvn clean install -U**, the app will be built and the tests will run, the docker container with XMPP server will start automatically thanks to **Docker Test Containers**.
+Just run **mvn clean test**, the app will be built and the tests will run, the docker container with XMPP server will start automatically thanks to **Docker Test Containers**.
