@@ -1,36 +1,71 @@
 package pl.kgurniak.auctionsniper.ui;
 
+import pl.kgurniak.auctionsniper.SniperListener;
+import pl.kgurniak.auctionsniper.SniperSnapshot;
+import pl.kgurniak.auctionsniper.enums.SniperState;
+
 import javax.swing.*;
-import javax.swing.border.LineBorder;
+import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 
 public class MainWindow extends JFrame {
+    public static final String APPLICATION_TITLE = "Auction Sniper";
     public static final String MAIN_WINDOW_NAME = "Auction Sniper Main";
-    public static final String SNIPER_STATUS_NAME = "sniper status";
-    public static final String STATUS_JOINING = "Joining";
-    public static final String STATUS_LOST = "Lost";
-    public static final String STATUS_BIDDING = "Bidding";
-    public static final String STATUS_WINNING = "Winning";
-    public static final String STATUS_WON = "Won";
-    private final JLabel sniperStatus = createLabel(STATUS_JOINING);
+    private static final String SNIPERS_TABLE_NAME = "Snipers Table";
+    private final SnipersTableModel snipers;
 
-    public MainWindow() {
+    public MainWindow(SnipersTableModel snipers) {
         super("Auction Sniper");
+        this.snipers = snipers;
         setName(MAIN_WINDOW_NAME);
-        add(sniperStatus);
+        fillContentPane(makeSnipersTable());
         pack();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
     }
 
-    public void showStatus(String status) {
-        sniperStatus.setText(status);
+    private JTable makeSnipersTable() {
+        final JTable snipersTable = new JTable(snipers);
+        snipersTable.setName(SNIPERS_TABLE_NAME);
+        return snipersTable;
     }
 
-    private static JLabel createLabel(String initialText) {
-        JLabel result = new JLabel(initialText);
-        result.setName(SNIPER_STATUS_NAME);
-        result.setBorder(new LineBorder(Color.BLACK));
-        return result;
+    private void fillContentPane(JTable snipersTable) {
+        final Container contentPane = getContentPane();
+        contentPane.setLayout(new BorderLayout());
+        contentPane.add(new JScrollPane(snipersTable), BorderLayout.CENTER);
+    }
+
+    public static class SnipersTableModel extends AbstractTableModel implements SniperListener {
+        private static String[] STATUS_TEXT = {"Joining", "Bidding", "Winning", "Lost", "Won"};
+        private final static SniperSnapshot STARTING_UP = new SniperSnapshot("", 0, 0, SniperState.JOINING);
+        private SniperSnapshot sniperSnapshot = STARTING_UP;
+
+        @Override
+        public void sniperStateChanged(SniperSnapshot newSniperSnapshot) {
+            sniperSnapshot = newSniperSnapshot;
+            fireTableRowsUpdated(0, 0);
+        }
+
+        public int getColumnCount() {
+            return Column.values().length;
+        }
+
+        public int getRowCount() {
+            return 1;
+        }
+
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            return Column.at(columnIndex).valueIn(sniperSnapshot);
+        }
+
+        public static String textFor(SniperState state) {
+            return STATUS_TEXT[state.ordinal()];
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            return Column.at(column).name;
+        }
     }
 }
