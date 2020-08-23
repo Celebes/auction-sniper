@@ -41,12 +41,12 @@ public class Main {
         });
     }
 
-    private void joinAuction(XMPPConnection connection, String itemId) throws XMPPException {
+    private void joinAuction(XMPPConnection connection, String itemId) {
         disconnectWhenUICloses(connection);
         final Chat chat = connection.getChatManager().createChat(auctionId(itemId, connection), null);
         this.notToBeGCd = chat;
         Auction auction = new XMPPAuction(chat);
-        chat.addMessageListener(new AuctionMessageTranslator(new AuctionSniper(auction, new SniperStateDisplayer())));
+        chat.addMessageListener(new AuctionMessageTranslator(connection.getUser(), new AuctionSniper(auction, new SniperStateDisplayer())));
         auction.join();
     }
 
@@ -84,6 +84,16 @@ public class Main {
         @Override
         public void sniperLost() {
             showStatus(MainWindow.STATUS_LOST);
+        }
+
+        @Override
+        public void sniperWinning() {
+            showStatus(MainWindow.STATUS_WINNING);
+        }
+
+        @Override
+        public void sniperWon() {
+            showStatus(MainWindow.STATUS_WON);
         }
 
         private void showStatus(final String status) {

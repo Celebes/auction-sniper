@@ -3,14 +3,17 @@ package pl.kgurniak.auctionsniper;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.packet.Message;
+import pl.kgurniak.auctionsniper.enums.PriceSource;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class AuctionMessageTranslator implements MessageListener {
+    private final String sniperId;
     private final AuctionEventListener listener;
 
-    public AuctionMessageTranslator(AuctionEventListener listener) {
+    public AuctionMessageTranslator(String sniperId, AuctionEventListener listener) {
+        this.sniperId = sniperId;
         this.listener = listener;
     }
 
@@ -26,7 +29,7 @@ public class AuctionMessageTranslator implements MessageListener {
             case "PRICE":
                 final int price = event.currentPrice();
                 final int increment = event.increment();
-                listener.currentPrice(price, increment);
+                listener.currentPrice(price, increment, event.isFrom(sniperId));
                 break;
             default:
                 throw new UnsupportedOperationException();
@@ -46,6 +49,14 @@ public class AuctionMessageTranslator implements MessageListener {
 
         public int increment() {
             return getInt("Increment");
+        }
+
+        public PriceSource isFrom(String sniperId) {
+            return sniperId.equals(bidder()) ? PriceSource.FromSniper : PriceSource.FromOtherBidder;
+        }
+
+        private String bidder() {
+            return get("Bidder");
         }
 
         private int getInt(String fieldName) {
