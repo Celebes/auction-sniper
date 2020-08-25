@@ -1,7 +1,6 @@
 package pl.kgurniak.auctionsniper.ui;
 
 import pl.kgurniak.auctionsniper.SniperSnapshot;
-import pl.kgurniak.auctionsniper.ui.MainWindow.SnipersTableModel;
 
 public enum Column {
     ITEM_IDENTIFIER("Item") {
