@@ -5,6 +5,7 @@ import org.hamcrest.Matcher;
 import org.jmock.Expectations;
 import org.jmock.States;
 import org.jmock.integration.junit4.JUnitRuleMockery;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import pl.kgurniak.auctionsniper.enums.PriceSource;
@@ -20,8 +21,13 @@ public class AuctionSniperTest {
     private static final String ITEM_ID = "item-id";
     private final SniperListener sniperListener = context.mock(SniperListener.class);
     private final Auction auction = context.mock(Auction.class);
-    private final AuctionSniper sniper = new AuctionSniper(auction, sniperListener, ITEM_ID);
+    private final AuctionSniper sniper = new AuctionSniper(ITEM_ID, auction);
     private final States sniperState = context.states("sniper");
+
+    @Before
+    public void addAuctionSniperListener() {
+        sniper.addSniperListener(sniperListener);
+    }
 
     @Test
     public void reportsLostIfAuctionClosesImmediately() {

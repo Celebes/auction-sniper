@@ -7,9 +7,9 @@ import org.jmock.integration.junit4.JUnitRuleMockery;
 import org.junit.Rule;
 import org.junit.Test;
 import pl.kgurniak.auctionsniper.enums.PriceSource;
+import pl.kgurniak.auctionsniper.xmpp.XMPPAuction;
 
 import static e2e.ApplicationRunner.SNIPER_ID;
-import static pl.kgurniak.auctionsniper.Main.PRICE_COMMAND_FORMAT;
 
 public class AuctionMessageTranslatorTest {
 
@@ -52,7 +52,7 @@ public class AuctionMessageTranslatorTest {
             exactly(1).of(listener).currentPrice(price, increment, PriceSource.FromSniper);
         }});
         Message message = new Message();
-        message.setBody(String.format(PRICE_COMMAND_FORMAT, price, increment, SNIPER_ID));
+        message.setBody(String.format(XMPPAuction.PRICE_COMMAND_FORMAT, price, increment, SNIPER_ID));
         translator.processMessage(UNUSED_CHAT, message);
     }
 

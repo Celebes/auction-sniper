@@ -1,5 +1,7 @@
 package pl.kgurniak.auctionsniper.ui;
 
+import pl.kgurniak.auctionsniper.AuctionSniper;
+import pl.kgurniak.auctionsniper.PortfolioListener;
 import pl.kgurniak.auctionsniper.SniperListener;
 import pl.kgurniak.auctionsniper.SniperSnapshot;
 import pl.kgurniak.auctionsniper.enums.SniperState;
@@ -9,7 +11,7 @@ import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SnipersTableModel extends AbstractTableModel implements SniperListener {
+public class SnipersTableModel extends AbstractTableModel implements SniperListener, PortfolioListener {
     private static String[] STATUS_TEXT = {"Joining", "Bidding", "Winning", "Lost", "Won"};
     private List<SniperSnapshot> snapshots = new ArrayList<>();
 
@@ -20,7 +22,13 @@ public class SnipersTableModel extends AbstractTableModel implements SniperListe
         fireTableRowsUpdated(row, row);
     }
 
-    public void addSniper(SniperSnapshot snapshot) {
+    @Override
+    public void sniperAdded(AuctionSniper sniper) {
+        sniper.addSniperListener(new SwingThreadSniperListener(this));
+        addSniperSnapshot(sniper.getSnapshot());
+    }
+
+    private void addSniperSnapshot(SniperSnapshot snapshot) {
         int row = snapshots.size();
         snapshots.add(snapshot);
         fireTableRowsInserted(row, row);

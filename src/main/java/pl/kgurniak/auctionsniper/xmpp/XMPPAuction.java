@@ -6,10 +6,13 @@ import org.jivesoftware.smack.XMPPException;
 import pl.kgurniak.auctionsniper.Auction;
 import pl.kgurniak.auctionsniper.AuctionEventListener;
 import pl.kgurniak.auctionsniper.AuctionMessageTranslator;
-import pl.kgurniak.auctionsniper.Main;
 import pl.kgurniak.auctionsniper.util.Announcer;
 
 public class XMPPAuction implements Auction {
+    public static final String JOIN_COMMAND_FORMAT = "SOLVersion: 1.1; Command: JOIN;";
+    public static final String CLOSE_COMMAND_FORMAT = "SOLVersion: 1.1; Event: CLOSE;";
+    public static final String BID_COMMAND_FORMAT = "SOLVersion: 1.1; Command: BID; Price: %d;";
+    public static final String PRICE_COMMAND_FORMAT = "SOLVersion: 1.1; Event: PRICE; CurrentPrice: %d; Increment: %d; Bidder: %s;";
     private final Announcer<AuctionEventListener> auctionEventListeners = Announcer.to(AuctionEventListener.class);
     private final Chat chat;
 
@@ -21,7 +24,7 @@ public class XMPPAuction implements Auction {
     }
 
     private static String auctionId(String itemId, XMPPConnection connection) {
-        return String.format(Main.AUCTION_ID_FORMAT, itemId, connection.getServiceName());
+        return String.format(XMPPAuctionHouse.AUCTION_ID_FORMAT, itemId, connection.getServiceName());
     }
 
     @Override
@@ -31,12 +34,12 @@ public class XMPPAuction implements Auction {
 
     @Override
     public void bid(int amount) {
-        sendMessage(String.format(Main.BID_COMMAND_FORMAT, amount));
+        sendMessage(String.format(BID_COMMAND_FORMAT, amount));
     }
 
     @Override
     public void join() {
-        sendMessage(Main.JOIN_COMMAND_FORMAT);
+        sendMessage(JOIN_COMMAND_FORMAT);
     }
 
     private void sendMessage(String message) {

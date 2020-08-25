@@ -2,8 +2,6 @@ package pl.kgurniak.auctionsniper.xmpp;
 
 import e2e.ApplicationRunner;
 import e2e.FakeAuctionServer;
-import org.jivesoftware.smack.ConnectionConfiguration;
-import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.junit.After;
 import org.junit.Before;
@@ -11,7 +9,6 @@ import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import pl.kgurniak.auctionsniper.Auction;
 import pl.kgurniak.auctionsniper.AuctionEventListener;
-import pl.kgurniak.auctionsniper.Main;
 import pl.kgurniak.auctionsniper.enums.PriceSource;
 
 import java.util.concurrent.CountDownLatch;
@@ -19,11 +16,11 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertTrue;
 
-public class XMPPAuctionTest {
+public class XMPPAuctionHouseTest {
     private static final int OPENFIRE_PORT = 5222;
     private final GenericContainer openfire = new GenericContainer("celebez/openfire:4.6.0.beta").withExposedPorts(OPENFIRE_PORT);
     private FakeAuctionServer auction;
-    private XMPPConnection connection;
+    private XMPPAuctionHouse auctionHouse;
 
     static {
         System.setProperty("com.objogate.wl.keyboard", "GB");
@@ -35,16 +32,13 @@ public class XMPPAuctionTest {
         final Integer openfirePort = openfire.getMappedPort(OPENFIRE_PORT);
         auction = new FakeAuctionServer(openfirePort, "item-54321");
         auction.startSellingItem();
-
-        connection = new XMPPConnection(new ConnectionConfiguration(FakeAuctionServer.XMPP_HOSTNAME, openfirePort));
-        connection.connect();
-        connection.login(ApplicationRunner.SNIPER_ID, ApplicationRunner.SNIPER_PASSWORD, Main.AUCTION_RESOURCE);
+        auctionHouse = XMPPAuctionHouse.connect(FakeAuctionServer.XMPP_HOSTNAME, ApplicationRunner.SNIPER_ID, ApplicationRunner.SNIPER_PASSWORD, String.valueOf(openfirePort));
     }
 
     @Test
     public void receivesEventsFromAuctionServerAfterJoining() throws Exception {
         CountDownLatch auctionWasClosed = new CountDownLatch(1);
-        Auction auction = new XMPPAuction(connection, this.auction.getItemId());
+        Auction auction = auctionHouse.auctionFor(this.auction.getItemId());
         auction.addAuctionEventListener(auctionClosedListener(auctionWasClosed));
         auction.join();
         this.auction.hasReceivedJoinRequestFrom(ApplicationRunner.SNIPER_XMPP_ID);
@@ -67,8 +61,8 @@ public class XMPPAuctionTest {
 
     @After
     public void closeConnection() {
-        if (connection != null) {
-            connection.disconnect();
+        if (auctionHouse != null) {
+            auctionHouse.disconnect();
         }
         auction.stop();
         openfire.stop();
