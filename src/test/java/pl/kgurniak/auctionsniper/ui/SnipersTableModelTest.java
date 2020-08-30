@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import pl.kgurniak.auctionsniper.AuctionSniper;
+import pl.kgurniak.auctionsniper.Item;
 import pl.kgurniak.auctionsniper.SniperSnapshot;
 import pl.kgurniak.auctionsniper.enums.SniperState;
 import pl.kgurniak.auctionsniper.util.Defect;
@@ -23,7 +24,8 @@ public class SnipersTableModelTest {
     @Rule
     public final JUnitRuleMockery context = new JUnitRuleMockery();
 
-    private final AuctionSniper sniper = new AuctionSniper("item 0", null);
+    private static final String ITEM_ID = "item 0";
+    private final AuctionSniper sniper = new AuctionSniper(new Item(ITEM_ID, 234), null);
     private final TableModelListener listener = context.mock(TableModelListener.class);
     private final SnipersTableModel model = new SnipersTableModel();
 
@@ -74,7 +76,7 @@ public class SnipersTableModelTest {
 
     @Test
     public void holdsSnipersInAdditionOrder() {
-        AuctionSniper sniper2 = new AuctionSniper("item 1", null);
+        AuctionSniper sniper2 = new AuctionSniper(new Item("item 1", 345), null);
         context.checking(new Expectations() {{
             ignoring(listener);
         }});
@@ -88,7 +90,7 @@ public class SnipersTableModelTest {
 
     @Test
     public void updatesCorrectRowForSniper() {
-        AuctionSniper sniper2 = new AuctionSniper("item 1", null);
+        AuctionSniper sniper2 = new AuctionSniper(new Item("item 1", 345), null);
 
         context.checking(new Expectations() {{
             allowing(listener).tableChanged(with(anyInsertionEvent()));

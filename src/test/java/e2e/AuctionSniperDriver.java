@@ -1,7 +1,5 @@
 package e2e;
 
-import com.objogate.wl.keyboard.KeyboardLayout;
-import com.objogate.wl.robot.RoboticAutomaton;
 import com.objogate.wl.swing.AWTEventQueueProber;
 import com.objogate.wl.swing.driver.JButtonDriver;
 import com.objogate.wl.swing.driver.JFrameDriver;
@@ -29,12 +27,17 @@ public class AuctionSniperDriver extends JFrameDriver {
 
     @SuppressWarnings("unchecked")
     public void startBiddingFor(String itemId) {
-        itemIdField().replaceAllText(itemId);
+        startBiddingFor(itemId, Integer.MAX_VALUE);
+    }
+
+    public void startBiddingFor(String itemId, int stopPrice) {
+        textField(MainWindow.NEW_ITEM_ID_NAME).replaceAllText(itemId);
+        textField(MainWindow.NEW_ITEM_STOP_PRICE_NAME).replaceAllText(String.valueOf(stopPrice));
         bidButton().click();
     }
 
-    private JTextFieldDriver itemIdField() {
-        JTextFieldDriver newItemId = new JTextFieldDriver(this, JTextField.class, named(MainWindow.NEW_ITEM_ID_NAME));
+    private JTextFieldDriver textField(String fieldName) {
+        JTextFieldDriver newItemId = new JTextFieldDriver(this, JTextField.class, named(fieldName));
         newItemId.focusWithMouse();
         return newItemId;
     }

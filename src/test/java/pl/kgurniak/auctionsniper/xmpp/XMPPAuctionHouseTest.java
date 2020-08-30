@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import pl.kgurniak.auctionsniper.Auction;
 import pl.kgurniak.auctionsniper.AuctionEventListener;
+import pl.kgurniak.auctionsniper.Item;
 import pl.kgurniak.auctionsniper.enums.PriceSource;
 
 import java.util.concurrent.CountDownLatch;
@@ -17,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertTrue;
 
 public class XMPPAuctionHouseTest {
+    private static final String ITEM_ID = "item-54321";
     private static final int OPENFIRE_PORT = 5222;
     private final GenericContainer openfire = new GenericContainer("celebez/openfire:4.6.0.beta").withExposedPorts(OPENFIRE_PORT);
     private FakeAuctionServer auction;
@@ -30,7 +32,7 @@ public class XMPPAuctionHouseTest {
     public void before() throws XMPPException {
         openfire.start();
         final Integer openfirePort = openfire.getMappedPort(OPENFIRE_PORT);
-        auction = new FakeAuctionServer(openfirePort, "item-54321");
+        auction = new FakeAuctionServer(openfirePort, ITEM_ID);
         auction.startSellingItem();
         auctionHouse = XMPPAuctionHouse.connect(FakeAuctionServer.XMPP_HOSTNAME, ApplicationRunner.SNIPER_ID, ApplicationRunner.SNIPER_PASSWORD, String.valueOf(openfirePort));
     }
@@ -38,7 +40,7 @@ public class XMPPAuctionHouseTest {
     @Test
     public void receivesEventsFromAuctionServerAfterJoining() throws Exception {
         CountDownLatch auctionWasClosed = new CountDownLatch(1);
-        Auction auction = auctionHouse.auctionFor(this.auction.getItemId());
+        Auction auction = auctionHouse.auctionFor(new Item(ITEM_ID, 567));
         auction.addAuctionEventListener(auctionClosedListener(auctionWasClosed));
         auction.join();
         this.auction.hasReceivedJoinRequestFrom(ApplicationRunner.SNIPER_XMPP_ID);
