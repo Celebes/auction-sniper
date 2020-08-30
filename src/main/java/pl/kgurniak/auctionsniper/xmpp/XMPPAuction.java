@@ -7,6 +7,7 @@ import pl.kgurniak.auctionsniper.Auction;
 import pl.kgurniak.auctionsniper.AuctionEventListener;
 import pl.kgurniak.auctionsniper.AuctionMessageTranslator;
 import pl.kgurniak.auctionsniper.Item;
+import pl.kgurniak.auctionsniper.enums.PriceSource;
 import pl.kgurniak.auctionsniper.util.Announcer;
 
 public class XMPPAuction implements Auction {
@@ -16,12 +17,34 @@ public class XMPPAuction implements Auction {
     public static final String PRICE_COMMAND_FORMAT = "SOLVersion: 1.1; Event: PRICE; CurrentPrice: %d; Increment: %d; Bidder: %s;";
     private final Announcer<AuctionEventListener> auctionEventListeners = Announcer.to(AuctionEventListener.class);
     private final Chat chat;
+    private final XMPPFailureReporter failureReporter;
 
-    public XMPPAuction(XMPPConnection connection, Item item) {
-        this.chat = connection.getChatManager().createChat(
-                auctionId(item.identifier, connection),
-                new AuctionMessageTranslator(connection.getUser(), auctionEventListeners.announce())
-        );
+    public XMPPAuction(XMPPConnection connection, Item item, XMPPFailureReporter failureReporter) {
+        this.failureReporter = failureReporter;
+        AuctionMessageTranslator translator = translatorFor(connection);
+        chat = connection.getChatManager().createChat(auctionId(item.identifier, connection), translator);
+        addAuctionEventListener(chatDisconnectorFor(translator));
+    }
+
+    private AuctionMessageTranslator translatorFor(XMPPConnection connection) {
+        return new AuctionMessageTranslator(connection.getUser(), auctionEventListeners.announce(), failureReporter);
+    }
+
+    private AuctionEventListener chatDisconnectorFor(final AuctionMessageTranslator translator) {
+        return new AuctionEventListener() {
+            @Override
+            public void auctionFailed() {
+                chat.removeMessageListener(translator);
+            }
+
+            @Override
+            public void auctionClosed() {
+            }
+
+            @Override
+            public void currentPrice(int price, int increment, PriceSource priceSource) {
+            }
+        };
     }
 
     private static String auctionId(String itemId, XMPPConnection connection) {

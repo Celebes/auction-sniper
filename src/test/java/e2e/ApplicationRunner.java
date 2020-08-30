@@ -5,9 +5,10 @@ import pl.kgurniak.auctionsniper.enums.SniperState;
 import pl.kgurniak.auctionsniper.ui.MainWindow;
 import pl.kgurniak.auctionsniper.ui.SnipersTableModel;
 
-import java.util.concurrent.TimeUnit;
+import java.io.IOException;
 
 import static e2e.FakeAuctionServer.XMPP_HOSTNAME;
+import static org.hamcrest.Matchers.containsString;
 
 public class ApplicationRunner {
     public static final String SNIPER_ID = "sniper";
@@ -15,6 +16,7 @@ public class ApplicationRunner {
     public static final String SNIPER_XMPP_ID = "sniper@localhost/Auction";
 
     private AuctionSniperDriver driver;
+    private AuctionLogDriver logDriver = new AuctionLogDriver();
 
     public void startBiddingIn(final FakeAuctionServer... auctions) {
         startSniper(auctions[0].getPort());
@@ -35,6 +37,8 @@ public class ApplicationRunner {
     }
 
     private void startSniper(int port) {
+        logDriver.clearLog();
+
         Thread thread = new Thread("Test Application") {
             @Override
             public void run() {
@@ -79,6 +83,14 @@ public class ApplicationRunner {
 
     public void hasShownSniperIsLosing(FakeAuctionServer auction, int lastPrice, int lastBid) {
         driver.showsSniperStatus(auction.getItemId(), lastPrice, lastBid, SnipersTableModel.textFor(SniperState.LOSING));
+    }
+
+    public void showsSniperHasFailed(FakeAuctionServer auction) {
+        driver.showsSniperStatus(auction.getItemId(), 0, 0, SnipersTableModel.textFor(SniperState.FAILED));
+    }
+
+    public void reportsInvalidMessage(FakeAuctionServer auction, String brokenMessage) throws IOException {
+        logDriver.hasEntry(containsString(brokenMessage));
     }
 
     public void stop() {

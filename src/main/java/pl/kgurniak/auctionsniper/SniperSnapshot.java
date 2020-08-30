@@ -38,6 +38,10 @@ public class SniperSnapshot {
         return new SniperSnapshot(itemId, price, lastBid, SniperState.LOSING);
     }
 
+    public SniperSnapshot failed() {
+        return new SniperSnapshot(itemId, 0, 0, SniperState.FAILED);
+    }
+
     public boolean isForSameItemAs(SniperSnapshot sniperSnapshot) {
         return itemId.equals(sniperSnapshot.itemId);
     }

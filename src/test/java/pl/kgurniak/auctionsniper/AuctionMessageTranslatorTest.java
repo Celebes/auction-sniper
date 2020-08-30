@@ -8,6 +8,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import pl.kgurniak.auctionsniper.enums.PriceSource;
 import pl.kgurniak.auctionsniper.xmpp.XMPPAuction;
+import pl.kgurniak.auctionsniper.xmpp.XMPPFailureReporter;
 
 import static e2e.ApplicationRunner.SNIPER_ID;
 
@@ -19,7 +20,8 @@ public class AuctionMessageTranslatorTest {
     public static final Chat UNUSED_CHAT = null;
 
     private final AuctionEventListener listener = context.mock(AuctionEventListener.class);
-    private final AuctionMessageTranslator translator = new AuctionMessageTranslator(SNIPER_ID, listener);
+    private final XMPPFailureReporter failureReporter = context.mock(XMPPFailureReporter.class);
+    private final AuctionMessageTranslator translator = new AuctionMessageTranslator(SNIPER_ID, listener, failureReporter);
 
     @Test
     public void notifiesAuctionClosedWhenCloseMessageReceived() {
@@ -56,4 +58,30 @@ public class AuctionMessageTranslatorTest {
         translator.processMessage(UNUSED_CHAT, message);
     }
 
+    @Test
+    public void notifiesAuctionFailedWhenBadMessageReceived() {
+        String badMessage = "a bad message";
+        expectFailureWithMessage(badMessage);
+        translator.processMessage(UNUSED_CHAT, message(badMessage));
+    }
+
+    @Test
+    public void notifiesAuctionFailedWhenEventTypeMissing() {
+        final String badMessage = "SOLVersion: 1.1; CurrentPrice: 234; Increment: 5; Bidder: " + SNIPER_ID + ";";
+        expectFailureWithMessage(badMessage);
+        translator.processMessage(UNUSED_CHAT, message(badMessage));
+    }
+
+    private void expectFailureWithMessage(final String badMessage) {
+        context.checking(new Expectations() {{
+            oneOf(listener).auctionFailed();
+            oneOf(failureReporter).cannotTranslateMessage(with(SNIPER_ID), with(badMessage), with(any(Exception.class)));
+        }});
+    }
+
+    private Message message(String body) {
+        Message message = new Message();
+        message.setBody(body);
+        return message;
+    }
 }

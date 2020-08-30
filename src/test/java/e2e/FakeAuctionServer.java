@@ -73,6 +73,10 @@ public class FakeAuctionServer {
         connection.disconnect();
     }
 
+    public void sendInvalidMessageContaining(String brokenMessage) throws XMPPException {
+        currentChat.sendMessage(brokenMessage);
+    }
+
     public String getItemId() {
         return itemId;
     }

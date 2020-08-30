@@ -29,7 +29,7 @@ public class XMPPAuctionHouseTest {
     }
 
     @Before
-    public void before() throws XMPPException {
+    public void before() throws Exception {
         openfire.start();
         final Integer openfirePort = openfire.getMappedPort(OPENFIRE_PORT);
         auction = new FakeAuctionServer(openfirePort, ITEM_ID);
@@ -56,6 +56,11 @@ public class XMPPAuctionHouseTest {
             }
 
             public void currentPrice(int price, int increment, PriceSource priceSource) {
+                // not implemented
+            }
+
+            @Override
+            public void auctionFailed() {
                 // not implemented
             }
         };
